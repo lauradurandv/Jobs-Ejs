@@ -1,9 +1,11 @@
 const express = require("express");
 require("express-async-errors");
 require("dotenv").config();
+const secretWordRouter = require("./routes/secretWord");
+const auth = require("./middleware/auth");
 
 const app = express();
-
+app.use(require("body-parser").urlencoded({ extended: true }));
 const session = require("express-session");
 
 const MongoDBStore = require("connect-mongodb-session")(session);
@@ -35,32 +37,24 @@ app.use(session(sessionParms));
 
 app.set("view engine", "ejs");
 
+const passport = require("passport");
+const passportInit = require("./passport/passportInit");
+
+passportInit();
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(require("connect-flash")());
 
-app.use(require("body-parser").urlencoded({ extended: true }));
-
-//secret word handling
-app.get("/secretWord", (req, res) => {
-  if (!req.session.secretWord) {
-    req.session.secretWord = "syzygy";
-  }
-  res.locals.info = req.flash("info");
-  res.locals.errors = req.flash("error");
-  res.render("secretWord", {
-    secretWord: req.session.secretWord,
-  });
+app.use(require("./middleware/storeLocals"));
+app.get("/", (req, res) => {
+  res.render("index");
 });
+app.use("/sessions", require("./routes/sessionRoutes"));
 
-app.post("/secretWord", (req, res) => {
-  if (req.body.secretWord.toUpperCase()[0] == "P") {
-    req.flash("error", "that word wont work.");
-    req.flash("error", "You cant use words that start with p.");
-  } else {
-    req.session.secretWord = req.body.secretWord;
-    req.flash("info", "the secret word has changed");
-  }
-  res.redirect("/secretWord");
-});
+app.use("/secretWord", secretWordRouter);
+
+app.use("/secretWord", auth, secretWordRouter);
 
 //handles any routes that don't exist
 app.use((req, res) => {
@@ -78,6 +72,7 @@ const port = process.env.PORT || 3000;
 
 const start = async () => {
   try {
+    await require("./db/connect")(process.env.MONGO_URI);
     app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );

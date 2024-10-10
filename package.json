@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "NODE_ENV=test mocha tests/*.js --timeout 5000 --exit"
   },
   "author": "",
   "license": "ISC",
@@ -25,5 +26,13 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "xss-clean": "^0.1.4"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.0.3",
+    "chai": "^5.1.1",
+    "chai-http": "^5.1.1",
+    "factory-bot": "^6.3.1",
+    "mocha": "^10.7.3",
+    "puppeteer": "^23.5.1"
   }
 }

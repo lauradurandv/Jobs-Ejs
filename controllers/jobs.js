@@ -3,8 +3,8 @@ const Job = require("../models/Job");
 const getAllJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ createdBy: req.user._id.toString() });
-    res.render("jobs", { jobs });
-  } catch {
+    res.status(200).render("jobs", { jobs });
+  } catch (e) {
     req.flash("error", "Could not get all jobs.");
     res.redirect("/");
   }
@@ -16,7 +16,7 @@ const editJob = async (req, res) => {
     req.flash("error", "That specific job does not exist.");
     res.redirect("/jobs");
   } else {
-    res.render("job", { job });
+    res.status(200).render("job", { job });
   }
 };
 
@@ -27,7 +27,7 @@ const updateJob = async (req, res, next) => {
 };
 
 const addJob = async (req, res) => {
-  res.render("newJob", { job: null });
+  res.status(200).render("newJob", { job: null });
 };
 
 const createJob = async (req, res, next) => {
@@ -38,7 +38,7 @@ const createJob = async (req, res, next) => {
     res.redirect("/jobs");
   } else {
     req.flash("info", "The job entry was created.");
-    res.redirect("/jobs");
+    res.status(200).redirect("/jobs");
   }
 };
 

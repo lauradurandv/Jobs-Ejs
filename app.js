@@ -22,8 +22,11 @@ app.use(require("body-parser").urlencoded({ extended: true }));
 
 //records session in mongo database
 const MongoDBStore = require("connect-mongodb-session")(session);
-const url = process.env.MONGO_URI;
-
+let url = process.env.MONGO_URI;
+//if testing change to testing database
+if (process.env.NODE_ENV == "test") {
+  mongoURL = process.env.MONGO_URI_TEST;
+}
 const store = new MongoDBStore({
   // may throw an error, which won't be caught
   uri: url,
@@ -103,6 +106,26 @@ app.use("/secretWord", auth, secretWordRouter);
 
 app.use("/jobs", auth, jobRouter);
 
+//fixing content type response error
+app.use((req, res, next) => {
+  if (req.path == "/multiply") {
+    res.set("Content-Type", "application/json");
+  } else {
+    res.set("Content-Type", "text/html");
+  }
+  next();
+});
+
+app.get("/multiply", (req, res) => {
+  const result = req.query.first * req.query.second;
+  if (result.isNaN) {
+    result = "NaN";
+  } else if (result == null) {
+    result = "null";
+  }
+  res.json({ result: result });
+});
+
 //handles any routes that don't exist
 app.use((req, res) => {
   res.status(404).send(`That page (${req.url}) was not found.`);
@@ -117,10 +140,11 @@ app.use((err, req, res, next) => {
 //setting port
 const port = process.env.PORT || 3000;
 
+//now synchronous
 const start = async () => {
   try {
-    await require("./db/connect")(process.env.MONGO_URI);
-    app.listen(port, () =>
+    require("./db/connect")(process.env.MONGO_URI);
+    return app.listen(port, () =>
       console.log(`Server is listening on port ${port}...`)
     );
   } catch (error) {
@@ -129,3 +153,5 @@ const start = async () => {
 };
 
 start();
+
+module.exports = { app };

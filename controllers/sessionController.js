@@ -2,7 +2,7 @@ const User = require("../models/User");
 const parseVErr = require("../utils/parseValidationErrs");
 
 const registerShow = (req, res) => {
-  res.render("register");
+  res.status(200).render("register");
 };
 
 const registerDo = async (req, res, next) => {
@@ -22,7 +22,7 @@ const registerDo = async (req, res, next) => {
     }
     return res.render("register", { errors: flash("errors") });
   }
-  res.redirect("/");
+  res.status(200).redirect("/");
 };
 
 const logoff = (req, res) => {
@@ -38,7 +38,7 @@ const logonShow = (req, res) => {
   if (req.user) {
     return res.redirect("/");
   }
-  res.render("logon");
+  res.status(200).render("logon");
 };
 
 module.exports = {
